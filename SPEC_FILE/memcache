@@ -1,0 +1,73 @@
+#!/bin/bash
+#description: Memcached Service Daemon
+#processname: Memcached
+#chkconfig: 2345 90 50
+
+. /etc/rc.d/init.d/functions
+. /etc/sysconfig/network
+ 
+memcached_exec="/opt/memcache-1.4.25/bin/memcached"
+memcached_pid="/var/run/memcached.pid"
+lockfile="/var/lock/subsys/memcached"
+prog="memcached"
+ 
+memcached_host="127.0.0.1"
+memcached_port=11411
+memcached_memory="1024"
+ 
+start() {
+  if [ $UID -ne 0 ]; then
+    echo "User has insufficient privilege."
+    exit 4
+  fi
+  [ -x $memcached_exec ] || exit 5
+  echo -n $"starting $prog: "
+  daemon $memcached_exec -u daemon -d -m $memcached_memory  -l $memcached_host -p $memcached_port -c 256 -P $memcached_pid
+  retval=$?
+  echo
+  [ $retval -eq 0 ] && touch $lockfile
+}
+ 
+stop() {
+  if [ $UID -ne 0 ]; then
+    echo "User has insufficient privilege."
+    exit 4
+  fi
+  echo -n $"Stopping $prog: "
+    if [ -n "`pidfileofproc $memcached_exec`" ]; then
+        killproc $memcached_exec
+ 
+    else
+        failure $"stopping $prog"
+    fi
+  retval=$?
+  echo
+  [ $retval -eq 0 ] && rm -f $lockfile
+}
+ 
+status() {
+  status $prog
+}
+ 
+case "$1" in
+  "start")
+    start
+    ;;
+  "stop")
+    stop
+    ;;
+  "restart")
+    stop
+    sleep 3
+    start
+    ;;
+  "status")
+    status
+    ;;
+  *)
+    echo $"Usage: $0 {start|stop|status|restart}"
+    exit 1
+    ;;
+esac
+exit $?
+

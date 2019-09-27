@@ -1,0 +1,53 @@
+---
+# author: yehe
+
+- name: Install | Tsung install
+  shell: rpm -ivh https://vsftp.ftsview.com/repolist/techplatform-1.0-1.el7.x86_64.rpm
+  ignore_errors: True
+
+- name: Install | Tsung install package
+  yum: 
+    name: tsung-1.7.0
+    state: present
+  ignore_errors: True
+  
+- name: Configure | Tsung hosts
+  template:
+    src: hosts.j2
+    dest: /etc/hosts
+
+- name: Configure | ssh-key
+  authorized_key:
+    user: root
+    key: "{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
+    state: present
+
+- name: Configure | ssh_config
+  replace:
+    path: /etc/ssh/ssh_config
+    regexp: '^#   StrictHostKeyChecking ask'
+    replace: 'StrictHostKeyChecking no'
+
+- name: Configure | ssh service
+  service:
+    name: sshd
+    state: restarted
+
+- name: Configure | Firewalled disable
+  service:
+    name: firewalled
+    state: stopped
+    enable: false
+  ignore_errors: True
+
+- name: Configure | Selinux set disable
+  command:
+    setenforce 0
+
+- name: Configure | Selinux disable
+  replace:
+    path: /etc/ssh/ssh_config
+    regexp: '^SELINUX=enforcing'
+    replace: 'SELINUX=disabled'
+  ignore_errors: True
+

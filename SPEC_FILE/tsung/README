@@ -1,0 +1,9 @@
+---
+#author: yehe
+#hosts 中填写hosts文件
+
+- hosts: tsung
+  vars:
+      - hosts: ["10.0.105.233 server1", "10.0.105.230 server2", "10.0.105.232 server3", "10.0.105.229 server4"]
+  roles:
+    - { role: tsung }

@@ -1,0 +1,12 @@
+[Unit]
+Description=Redis In-Memory Data Store
+After=network.target
+ 
+[Service]
+Type=forking
+ExecStart=/usr/bin/redis-server /opt/redis3.0.6/etc/redis.conf
+ExecStop=/usr/bin/redis-cli shutdown
+Restart=always
+ 
+[Install]
+WantedBy=multi-user.target
